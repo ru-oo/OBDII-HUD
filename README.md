@@ -132,6 +132,23 @@ cmake --build LaptopBridge/build --target LaptopBridge
 - 날씨 API 키가 소스에 직접 들어가는 구조 → 환경변수/설정 파일 분리 예정.
 - 자동 재연결, 단위 테스트, CI 빌드는 향후 과제.
 
+## 트러블슈팅
+
+### iPad 페이지 전환 렉
+
+**증상** — iPad(디자인 해상도 2388×1668)에서 `SwipeView` 페이지 전환 애니메이션 도중 프레임이 드랍됨.
+
+**원인** — `qml/hud2/Hud2App.qml`의 `SwipeView`(`id: viewStack`)가 `Page1Driving {}` · `Page2Engine {}` · `Page3Nav {}`를 인라인으로 선언합니다. SwipeView는 이 세 페이지를 모두 즉시 인스턴스화해 유지하므로(아래 *확인 필요* 참고), 전환 애니메이션 중 인접 페이지가 화면에 겹쳐 동시에 렌더됩니다. 각 페이지는 Canvas 기반 게이지(`ArcGauge`/`RadialGauge`/`BarGauge`/`O2Trace`)로 구성되고 `Page3Nav.qml`은 추가로 `QtLocation`의 `Map`(`id: navMap`)을 포함해, 전환 순간 이들이 한꺼번에 리페인트되면서 부하가 몰립니다.
+
+**해결** — 코드에는 페이지별 리페인트 비용을 평상시 0에 가깝게 유지하는 장치들이 들어 있어, 전환 시 실제로 변하는 부분만 다시 그리도록 제한합니다.
+
+- **Canvas는 값/테마 변화 시에만 `requestPaint()`** — `ArcGauge.qml`·`RadialGauge.qml`·`BarGauge.qml`은 `on_AnimValueChanged`, `on_ThemeTrackerChanged`, `onWidthChanged`/`onHeightChanged`에서만 리페인트를 트리거합니다. 표시값은 `Behavior on _animValue { NumberAnimation { duration: 300 } }`로 값이 바뀔 때만 애니메이트되므로, 값이 고정된 정적 상태에서는 매 프레임 리페인트가 발생하지 않습니다(단, 이 300ms 보간 구간에는 프레임마다 다시 그려지므로 전환과 값 갱신이 겹치면 부하가 커질 수 있음). `Page3Nav.qml`의 차량 위치 마커 `mapCanvas`도 `onHeadingChanged`에서만 `requestPaint()`를 호출합니다.
+- **상시 루프 타이머는 `visible` 가드** — `O2Trace.qml`의 파형 애니메이션용 `Timer { interval: 33 }`은 `running: root.value !== null && root.visible` 조건으로 묶여 있어, 보이지 않는 위젯에서는 30fps 루프가 돌지 않습니다.
+- **상시 리페인트 배경이 hud2 스킨에서 빠짐** — `qml/components/`의 `ScanlineEffect.qml`(`NumberAnimation on _pos { loops: Animation.Infinite }`)과 `BackgroundScene.qml`(무한 `NumberAnimation on _offset` + `on_OffsetChanged: requestPaint()`)은 상시 리페인트 루프지만, `qml/hud2/` 페이지들은 이들을 import/사용하지 않습니다. `Page1Driving.qml`에도 상시 글로우를 뺀 흔적(`Background glow removed as requested` 주석)이 있습니다.
+- **데이터는 변경분만 emit** — `src/VehicleData.cpp`의 `applyValues()`는 `EMIT_IF` 매크로로 `이전값 != 새값`일 때만 해당 `*Changed` 시그널을 발생시킵니다. GPS는 `onPositionUpdated`에서 `info.isValid()`일 때만 `gpsChanged()`, DTC는 `m_dtcList != dtcs`일 때만 `dtcListChanged()`를 emit합니다. 값이 바뀌지 않으면 QML 바인딩 갱신·리페인트도 트리거되지 않습니다.
+
+> **확인 필요** — `SwipeView`에는 페이지 지연 로딩(`Loader`/`asynchronous`)이나 비표시 페이지의 페인트 정지가 코드에 없습니다. 세 페이지는 항상 인스턴스화·유지되므로, 전환 겹침 자체를 줄이는 근본 대책(지연 로딩 등)은 아직 적용돼 있지 않습니다.
+
 ## 디렉터리 구조
 
 ```
