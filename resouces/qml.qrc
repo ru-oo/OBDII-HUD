@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/HudView.qml</file>
+        <file>qml/components/ArcGauge.qml</file>
+        <file>qml/components/HudPanel.qml</file>
+        <file>qml/components/ProgressBar.qml</file>
+        <file>qml/components/AdasOverlay.qml</file>
+        <file>qml/components/TopInfoPanel.qml</file>
+        <file>qml/components/BottomStatusBar.qml</file>
+        <file>qml/components/ScanlineEffect.qml</file>
+        <file>qml/components/BackgroundScene.qml</file>
+    </qresource>
+</RCC>
