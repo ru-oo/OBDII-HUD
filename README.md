@@ -12,7 +12,7 @@
 
 | Page 1 — Driving | Page 2 — Engine | Page 3 — Nav |
 | --- | --- | --- |
-| ![page1](picture/page1.png) | ![page2](picture/pag2.png) | ![page3](picture/page3.png) |
+| ![page1](picture/page1.png) | ![page2](picture/page2.png) | ![page3](picture/page3.png) |
 
 > 위 GIF는 demo 영상에서 추출한 일부 구간입니다. 실차/시뮬레이션 풀 영상은 별도 제공.
 
@@ -138,7 +138,7 @@ cmake --build LaptopBridge/build --target LaptopBridge
 
 **증상** — iPad(디자인 해상도 2388×1668)에서 `SwipeView` 페이지 전환 애니메이션 도중 프레임이 드랍됨.
 
-**원인** — `qml/hud2/Hud2App.qml`의 `SwipeView`(`id: viewStack`)가 `Page1Driving {}` · `Page2Engine {}` · `Page3Nav {}`를 인라인으로 선언합니다. SwipeView는 이 세 페이지를 모두 즉시 인스턴스화해 유지하므로(아래 *확인 필요* 참고), 전환 애니메이션 중 인접 페이지가 화면에 겹쳐 동시에 렌더됩니다. 각 페이지는 Canvas 기반 게이지(`ArcGauge`/`RadialGauge`/`BarGauge`/`O2Trace`)로 구성되고 `Page3Nav.qml`은 추가로 `QtLocation`의 `Map`(`id: navMap`)을 포함해, 전환 순간 이들이 한꺼번에 리페인트되면서 부하가 몰립니다.
+**원인** — 초기 구현에서는 `qml/hud2/Hud2App.qml`의 `SwipeView`(`id: viewStack`)가 `Page1Driving {}` · `Page2Engine {}` · `Page3Nav {}`를 인라인으로 선언했습니다. 이 경우 SwipeView가 세 페이지를 모두 즉시 인스턴스화해 유지하므로, 전환 애니메이션 중 인접 페이지가 화면에 겹쳐 동시에 렌더됩니다. 각 페이지는 Canvas 기반 게이지(`ArcGauge`/`RadialGauge`/`BarGauge`/`O2Trace`)로 구성되고 `Page3Nav.qml`은 추가로 `QtLocation`의 `Map`(`id: navMap`)을 포함해, 전환 순간 이들이 한꺼번에 리페인트되면서 부하가 몰렸습니다.
 
 **해결** — 코드에는 페이지별 리페인트 비용을 평상시 0에 가깝게 유지하는 장치들이 들어 있어, 전환 시 실제로 변하는 부분만 다시 그리도록 제한합니다.
 
@@ -146,7 +146,7 @@ cmake --build LaptopBridge/build --target LaptopBridge
 - **상시 루프 타이머는 `visible` 가드** — `O2Trace.qml`의 파형 애니메이션용 `Timer { interval: 33 }`은 `running: root.value !== null && root.visible` 조건으로 묶여 있어, 보이지 않는 위젯에서는 30fps 루프가 돌지 않습니다.
 - **상시 리페인트 배경이 hud2 스킨에서 빠짐** — `qml/components/`의 `ScanlineEffect.qml`(`NumberAnimation on _pos { loops: Animation.Infinite }`)과 `BackgroundScene.qml`(무한 `NumberAnimation on _offset` + `on_OffsetChanged: requestPaint()`)은 상시 리페인트 루프지만, `qml/hud2/` 페이지들은 이들을 import/사용하지 않습니다. `Page1Driving.qml`에도 상시 글로우를 뺀 흔적(`Background glow removed as requested` 주석)이 있습니다.
 - **데이터는 변경분만 emit** — `src/VehicleData.cpp`의 `applyValues()`는 `EMIT_IF` 매크로로 `이전값 != 새값`일 때만 해당 `*Changed` 시그널을 발생시킵니다. GPS는 `onPositionUpdated`에서 `info.isValid()`일 때만 `gpsChanged()`, DTC는 `m_dtcList != dtcs`일 때만 `dtcListChanged()`를 emit합니다. 값이 바뀌지 않으면 QML 바인딩 갱신·리페인트도 트리거되지 않습니다.
-- **페이지 지연 로딩** — `Hud2App.qml`의 `SwipeView`는 세 페이지를 `Repeater` + `Loader`로 감싸 `asynchronous: true`로 비동기 생성하고, `active: SwipeView.isCurrentItem || SwipeView.isNextItem || SwipeView.isPreviousItem`로 현재·인접 페이지만 유지합니다. 멀리 있는 페이지(예: 1페이지에 있을 때의 3페이지)는 unload되어, 전환 중 동시에 살아 있는 Canvas 게이지·`QtLocation` `Map` 수가 줄어듭니다. 비동기 생성이라 첫 진입 시 인스턴스화가 렌더 경로를 막지 않습니다. (전환 애니메이션 동안 인접 두 페이지가 함께 보이는 것 자체는 스와이프 동작상 불가피합니다.)
+- **페이지 지연 로딩 (인라인 → Loader)** — 위 인라인 선언을 `Hud2App.qml`에서 `Repeater` + `Loader`로 바꿔, `asynchronous: true`로 비동기 생성하고 `active: SwipeView.isCurrentItem || SwipeView.isNextItem || SwipeView.isPreviousItem`로 현재·인접 페이지만 유지하도록 했습니다. 멀리 있는 페이지(예: 1페이지에 있을 때의 3페이지)는 unload되어, 전환 중 동시에 살아 있는 Canvas 게이지·`QtLocation` `Map` 수가 줄어듭니다. 비동기 생성이라 첫 진입 시 인스턴스화가 렌더 경로를 막지 않습니다. (전환 애니메이션 동안 인접 두 페이지가 함께 보이는 것 자체는 스와이프 동작상 불가피합니다.)
 
 ## 디렉터리 구조
 
