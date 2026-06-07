@@ -170,16 +170,31 @@ Item {
     }
 
     // SwipeView for Pages
+    // 지연 로딩: 각 페이지를 Loader로 감싸 비동기 생성하고, 현재/인접 페이지만
+    // active로 유지한다. 멀리 있는 페이지는 unload되어, 전환 시 동시에 살아 있는
+    // Canvas 게이지 + Page3Nav의 QtLocation Map 수가 줄어든다.
     SwipeView {
         id: viewStack
         anchors.fill: parent
         currentIndex: 0
         interactive: true
 
-        Page1Driving {}
-        Page2Engine {}
-        Page3Nav {}
+        Repeater {
+            model: 3
+            Loader {
+                active: SwipeView.isCurrentItem || SwipeView.isNextItem || SwipeView.isPreviousItem
+                asynchronous: true
+                visible: status === Loader.Ready
+                sourceComponent: index === 0 ? page1Comp
+                               : index === 1 ? page2Comp
+                               : page3Comp
+            }
+        }
     }
+
+    Component { id: page1Comp; Page1Driving {} }
+    Component { id: page2Comp; Page2Engine {} }
+    Component { id: page3Comp; Page3Nav {} }
 
     // Premium Bottom Nav Bar (Sidebar style)
     Rectangle {
