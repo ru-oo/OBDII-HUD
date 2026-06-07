@@ -109,6 +109,8 @@ cmake --build build --target HudProject
 
 요구사항: Qt 6(Widgets, SerialPort, Network).
 
+![laptop bridge](LaptopBridge/picture/bridge.png)
+
 ```bash
 cmake -S LaptopBridge -B LaptopBridge/build -DCMAKE_PREFIX_PATH=<Qt 설치 경로>
 cmake --build LaptopBridge/build --target LaptopBridge
