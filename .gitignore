@@ -1,0 +1,83 @@
+# ── Build output (CMake / Qt) ─────────────────────────────
+build/
+build-*/
+out/
+bin/
+obj/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake.stamp
+Makefile
+*.ninja
+.ninja_deps
+.ninja_log
+
+# Compiled objects / binaries
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.app
+
+# Qt generated
+*_autogen/
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+*.moc
+.qmlls.ini
+*.qmlc
+*.jsc
+
+# Qt Creator / user project files
+*.pro.user
+*.pro.user.*
+*.qmake.stash
+CMakeLists.txt.user*
+
+# ── STM32 / embedded firmware build ───────────────────────
+Debug/
+Release/
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+*.su
+
+# ── Node / React prototypes (hud2, kpi) ───────────────────
+node_modules/
+dist/
+.cache/
+npm-debug.log*
+yarn-error.log*
+
+# ── Secrets / environment ─────────────────────────────────
+.env
+.env.*
+*.pem
+*.key
+secrets.*
+
+# ── Large media (kept out of git; see README for demos) ───
+*.mp4
+*.mov
+*.avi
+
+# ── Claude Code ───────────────────────────────────────────
+.claude/
+
+# ── OS / IDE ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
