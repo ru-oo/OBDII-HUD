@@ -311,7 +311,10 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.height * 0.38
 
-                    property bool hasLowTire: (vehicleData.tpmsFl < 28) || (vehicleData.tpmsFr < 28) || (vehicleData.tpmsRl < 28) || (vehicleData.tpmsRr < 28)
+                    // TPMS는 아직 실제 데이터 소스가 없다(README 알려진 한계 참고).
+                    // 값이 모두 0이면 미연동으로 보고 상시 빨간 경보가 뜨지 않게 가드한다.
+                    property bool tpmsAvailable: (vehicleData.tpmsFl > 0) || (vehicleData.tpmsFr > 0) || (vehicleData.tpmsRl > 0) || (vehicleData.tpmsRr > 0)
+                    property bool hasLowTire: tpmsAvailable && ((vehicleData.tpmsFl < 28) || (vehicleData.tpmsFr < 28) || (vehicleData.tpmsRl < 28) || (vehicleData.tpmsRr < 28))
 
                     // Pulsing Red Glow
                     Rectangle {
@@ -337,7 +340,8 @@ Item {
                         Column {
                             anchors.fill: parent
                             anchors.margins: 20
-                        Text { text: "TIRE PRESSURE · TPMS"; color: Hud2Theme.textTertiary; font.pixelSize: 12; font.weight: Font.Bold; font.letterSpacing: 1.4; font.family: "sans-serif" }
+                            opacity: tpmsWrapper.tpmsAvailable ? 1.0 : 0.4
+                        Text { text: tpmsWrapper.tpmsAvailable ? "TIRE PRESSURE · TPMS" : "TIRE PRESSURE · TPMS · N/A"; color: Hud2Theme.textTertiary; font.pixelSize: 12; font.weight: Font.Bold; font.letterSpacing: 1.4; font.family: "sans-serif" }
                         
                         Item {
                             width: parent.width
@@ -356,13 +360,13 @@ Item {
                             }
                             
                             // Fl
-                            Column { anchors.right: carCanvas.left; anchors.rightMargin: 10; anchors.top: carCanvas.top; anchors.topMargin: carCanvas.height*0.1; Text { text: vehicleData.tpmsFl.toFixed(1); color: (vehicleData.tpmsFl < 28) ? Hud2Theme.crit : Hud2Theme.ok; font.pixelSize: 22; font.weight: 300; font.family: "sans-serif" } Text { text: (vehicleData.tpmsFl < 28) ? "PSI · LOW" : "PSI · OK"; color: Hud2Theme.textTertiary; font.pixelSize: 10; font.weight: Font.Bold; font.family: "sans-serif" } }
+                            Column { anchors.right: carCanvas.left; anchors.rightMargin: 10; anchors.top: carCanvas.top; anchors.topMargin: carCanvas.height*0.1; Text { text: tpmsWrapper.tpmsAvailable ? vehicleData.tpmsFl.toFixed(1) : "—"; color: !tpmsWrapper.tpmsAvailable ? Hud2Theme.textTertiary : ((vehicleData.tpmsFl < 28) ? Hud2Theme.crit : Hud2Theme.ok); font.pixelSize: 22; font.weight: 300; font.family: "sans-serif" } Text { text: !tpmsWrapper.tpmsAvailable ? "PSI · N/A" : ((vehicleData.tpmsFl < 28) ? "PSI · LOW" : "PSI · OK"); color: Hud2Theme.textTertiary; font.pixelSize: 10; font.weight: Font.Bold; font.family: "sans-serif" } }
                             // Fr
-                            Column { anchors.left: carCanvas.right; anchors.leftMargin: 10; anchors.top: carCanvas.top; anchors.topMargin: carCanvas.height*0.1; Text { text: vehicleData.tpmsFr.toFixed(1); color: (vehicleData.tpmsFr < 28) ? Hud2Theme.crit : Hud2Theme.ok; font.pixelSize: 22; font.weight: 300; font.family: "sans-serif" } Text { text: (vehicleData.tpmsFr < 28) ? "PSI · LOW" : "PSI · OK"; color: Hud2Theme.textTertiary; font.pixelSize: 10; font.weight: Font.Bold; font.family: "sans-serif" } }
+                            Column { anchors.left: carCanvas.right; anchors.leftMargin: 10; anchors.top: carCanvas.top; anchors.topMargin: carCanvas.height*0.1; Text { text: tpmsWrapper.tpmsAvailable ? vehicleData.tpmsFr.toFixed(1) : "—"; color: !tpmsWrapper.tpmsAvailable ? Hud2Theme.textTertiary : ((vehicleData.tpmsFr < 28) ? Hud2Theme.crit : Hud2Theme.ok); font.pixelSize: 22; font.weight: 300; font.family: "sans-serif" } Text { text: !tpmsWrapper.tpmsAvailable ? "PSI · N/A" : ((vehicleData.tpmsFr < 28) ? "PSI · LOW" : "PSI · OK"); color: Hud2Theme.textTertiary; font.pixelSize: 10; font.weight: Font.Bold; font.family: "sans-serif" } }
                             // Rl
-                            Column { anchors.right: carCanvas.left; anchors.rightMargin: 10; anchors.bottom: carCanvas.bottom; anchors.bottomMargin: carCanvas.height*0.1; Text { text: vehicleData.tpmsRl.toFixed(1); color: (vehicleData.tpmsRl < 28) ? Hud2Theme.crit : Hud2Theme.ok; font.pixelSize: 22; font.weight: 300; font.family: "sans-serif" } Text { text: (vehicleData.tpmsRl < 28) ? "PSI · LOW" : "PSI · OK"; color: Hud2Theme.textTertiary; font.pixelSize: 10; font.weight: Font.Bold; font.family: "sans-serif" } }
+                            Column { anchors.right: carCanvas.left; anchors.rightMargin: 10; anchors.bottom: carCanvas.bottom; anchors.bottomMargin: carCanvas.height*0.1; Text { text: tpmsWrapper.tpmsAvailable ? vehicleData.tpmsRl.toFixed(1) : "—"; color: !tpmsWrapper.tpmsAvailable ? Hud2Theme.textTertiary : ((vehicleData.tpmsRl < 28) ? Hud2Theme.crit : Hud2Theme.ok); font.pixelSize: 22; font.weight: 300; font.family: "sans-serif" } Text { text: !tpmsWrapper.tpmsAvailable ? "PSI · N/A" : ((vehicleData.tpmsRl < 28) ? "PSI · LOW" : "PSI · OK"); color: Hud2Theme.textTertiary; font.pixelSize: 10; font.weight: Font.Bold; font.family: "sans-serif" } }
                             // Rr
-                            Column { anchors.left: carCanvas.right; anchors.leftMargin: 10; anchors.bottom: carCanvas.bottom; anchors.bottomMargin: carCanvas.height*0.1; Text { text: vehicleData.tpmsRr.toFixed(1); color: (vehicleData.tpmsRr < 28) ? Hud2Theme.crit : Hud2Theme.ok; font.pixelSize: 22; font.weight: 300; font.family: "sans-serif" } Text { text: (vehicleData.tpmsRr < 28) ? "PSI · LOW" : "PSI · OK"; color: Hud2Theme.textTertiary; font.pixelSize: 10; font.weight: Font.Bold; font.family: "sans-serif" } }
+                            Column { anchors.left: carCanvas.right; anchors.leftMargin: 10; anchors.bottom: carCanvas.bottom; anchors.bottomMargin: carCanvas.height*0.1; Text { text: tpmsWrapper.tpmsAvailable ? vehicleData.tpmsRr.toFixed(1) : "—"; color: !tpmsWrapper.tpmsAvailable ? Hud2Theme.textTertiary : ((vehicleData.tpmsRr < 28) ? Hud2Theme.crit : Hud2Theme.ok); font.pixelSize: 22; font.weight: 300; font.family: "sans-serif" } Text { text: !tpmsWrapper.tpmsAvailable ? "PSI · N/A" : ((vehicleData.tpmsRr < 28) ? "PSI · LOW" : "PSI · OK"); color: Hud2Theme.textTertiary; font.pixelSize: 10; font.weight: Font.Bold; font.family: "sans-serif" } }
                         }
                         }
                     }
@@ -386,13 +390,14 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 4
+                                opacity: vehicleData.tripKm > 0 ? 1.0 : 0.4   // 트립 거리 소스 미연동 → dim + N/A
                                 Text { text: "DISTANCE"; color: Hud2Theme.textTertiary; font.pixelSize: 13; font.weight: Font.Bold; font.letterSpacing: 1.6; font.family: "sans-serif" }
                                 RowLayout { 
                                     Layout.fillWidth: true
                                     spacing: 4
                                     Text { 
                                         Layout.fillWidth: true
-                                        text: vehicleData.tripKm.toFixed(1)
+                                        text: vehicleData.tripKm > 0 ? vehicleData.tripKm.toFixed(1) : "N/A"
                                         color: Hud2Theme.text; font.pixelSize: 22; font.weight: Font.Light; font.family: "sans-serif" 
                                         fontSizeMode: Text.Fit; minimumPixelSize: 10
                                     } 
@@ -402,6 +407,7 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 4
+                                opacity: (vehicleData.runTimeSec > 0 && vehicleData.tripKm > 0) ? 1.0 : 0.4   // 트립 거리 미연동 → dim + N/A
                                 Text { text: "AVG SPEED"; color: Hud2Theme.textTertiary; font.pixelSize: 13; font.weight: Font.Bold; font.letterSpacing: 1.6; font.family: "sans-serif" }
                                 RowLayout { 
                                     Layout.fillWidth: true
@@ -411,8 +417,8 @@ Item {
                                         text: {
                                             var rts = vehicleData.runTimeSec;
                                             var km = vehicleData.tripKm;
-                                            if (rts > 0) return (km / (rts / 3600)).toFixed(1);
-                                            return "0.0";
+                                            if (rts > 0 && km > 0) return (km / (rts / 3600)).toFixed(1);
+                                            return "N/A";
                                         }
                                         color: Hud2Theme.text; font.pixelSize: 22; font.weight: Font.Light; font.family: "sans-serif" 
                                         fontSizeMode: Text.Fit; minimumPixelSize: 10
@@ -423,13 +429,14 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 4
+                                opacity: vehicleData.odoKm > 0 ? 1.0 : 0.4   // 주행거리 소스 미연동 → dim + N/A
                                 Text { text: "ODOMETER"; color: Hud2Theme.textTertiary; font.pixelSize: 13; font.weight: Font.Bold; font.letterSpacing: 1.6; font.family: "sans-serif" }
                                 RowLayout { 
                                     Layout.fillWidth: true
                                     spacing: 4
                                     Text { 
                                         Layout.fillWidth: true
-                                        text: Math.round(vehicleData.odoKm)
+                                        text: vehicleData.odoKm > 0 ? Math.round(vehicleData.odoKm) : "N/A"
                                         color: Hud2Theme.text; font.pixelSize: 20; font.weight: Font.Light; font.family: "sans-serif" 
                                         fontSizeMode: Text.Fit; minimumPixelSize: 10
                                     } 
