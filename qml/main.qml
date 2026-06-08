@@ -15,8 +15,9 @@ Window {
     Shortcut { sequence: "Escape"; onActivated: root.showNormal() }
 
     // ── Theme cycle: T key
-    Shortcut { sequence: "T"; onActivated: theme.nextTheme() }
-    Shortcut { sequence: "Shift+T"; onActivated: theme.prevTheme() }
+    // 활성 hud2 스킨의 테마(Hud2Theme.name)를 순환한다. (상단 우측 테마 버튼과 동일 동작)
+    Shortcut { sequence: "T"; onActivated: { var ns = ["dark", "light", "night"]; Hud2Theme.name = ns[(ns.indexOf(Hud2Theme.name) + 1) % ns.length] } }
+    Shortcut { sequence: "Shift+T"; onActivated: { var ns = ["dark", "light", "night"]; Hud2Theme.name = ns[(ns.indexOf(Hud2Theme.name) + 2) % ns.length] } }
 
     // ── OBD port commands (for runtime use from QML console)
     // vehicleData.openUdpPort(35000)
