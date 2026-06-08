@@ -1,8 +1,7 @@
 #pragma once
-// VehicleData.h  – QML context property exposing all OBD-2 values
-// Modes:
-//   setDummyMode(true)  → rich physics simulation (default)
-//   openPort(port,baud) → ELM327 via USB/BT serial
+// VehicleData.h  – QML context property exposing all OBD-2 values + GPS
+// Source: openUdpPort(port) receives telemetry via ObdManager (UDP);
+// GPS via QGeoPositionInfoSource. Emits a *Changed signal only on value change.
 
 #include "ObdManager.h"
 #include "ObdValues.h"

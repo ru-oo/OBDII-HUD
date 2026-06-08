@@ -1,9 +1,8 @@
 #pragma once
 // ObdManager.h
-// ELM327 OBD-2 adapter driver
-//   – Sends AT init commands on connect
-//   – Round-robin polls all supported standard PIDs
-//   – Emits valuesUpdated() after each response
+// UDP telemetry receiver — binds a UDP port, reassembles newline-delimited
+// frames, validates sequence numbers, parses PIDs/DTCs, and emits
+// valuesUpdated() / dtcListUpdated() / connectionChanged().
 
 #include <QObject>
 #include <QUdpSocket>
