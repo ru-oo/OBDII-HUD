@@ -129,17 +129,18 @@ Item {
                         anchors.fill: parent
                         anchors.margins: 24
                         spacing: parent.height * 0.05
-                        Text { text: "O₂ SENSOR VOLTAGE"; color: Hud2Theme.textTertiary; font.pixelSize: 12; font.weight: Font.Bold; font.letterSpacing: 1.4; font.family: "sans-serif" }
-                        
+                        Text { text: "COMMANDED λ (AFR EQUIV · PID 0x44)"; color: Hud2Theme.textTertiary; font.pixelSize: 12; font.weight: Font.Bold; font.letterSpacing: 1.4; font.family: "sans-serif" }
+
                         O2Trace {
                             width: parent.width; height: parent.height * 0.35
-                            label: "Bank 1"
+                            label: "Commanded λ"
+                            unit: "λ"
                             value: vehicleData.cmdAFR
                         }
                         O2Trace {
                             width: parent.width; height: parent.height * 0.35
-                            label: "Bank 2"
-                            value: 0
+                            label: "O₂ Sensor Voltage"
+                            value: null   // 실제 O₂ 센서 전압 PID 미연동 → NOT EQUIPPED 표시
                         }
                     }
                 }

@@ -7,6 +7,7 @@ Item {
 
     property string label: ""
     property var value: null // null if not supported
+    property string unit: "V"
 
     Column {
         anchors.fill: parent
@@ -53,7 +54,7 @@ Item {
                     font.letterSpacing: -0.1
                 }
                 Text {
-                    text: "V"
+                    text: root.unit
                     color: Hud2Theme.textTertiary
                     font.pixelSize: 13
                     font.family: "sans-serif"
