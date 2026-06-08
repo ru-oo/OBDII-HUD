@@ -31,7 +31,7 @@
 - **시퀀스 기반 패킷 정합성**: 시퀀스 번호로 순서가 뒤바뀐 UDP 패킷을 폐기하고, STM32 재부팅(시퀀스 리셋)도 감지.
 - **DTC(고장 코드) 표시**: 별도 `DTCS:` 라인으로 진단 코드/설명/심각도를 받아 경고 UI에 반영.
 - **GPS / 환경 정보**: Qt Positioning으로 위치·방위·고도를, OpenWeatherMap으로 날씨를 가져와 HUD에 통합.
-- **테마 전환 가능한 다중 HUD UI**: 주행/엔진/내비 3페이지 구성, 런타임 테마 변경(`T` 키).
+- **테마 전환 가능한 다중 HUD UI**: 주행/엔진/내비 3페이지 구성, 런타임 테마 변경(상단 우측 테마 버튼 탭 또는 `T`/`Shift+T` 키).
 
 ## 시스템 아키텍처
 
@@ -101,7 +101,7 @@ cmake --build build --target HudProject
 ```
 
 - 실행하면 자동으로 UDP 35000 포트를 열어 텔레메트리를 수신합니다.
-- 단축키: `F11` 전체화면, `T` / `Shift+T` 테마 변경.
+- 단축키: `F11` 전체화면, `T` / `Shift+T` 테마 변경(상단 우측 테마 버튼 탭과 동일 — `Hud2Theme.name` 순환).
 - 날씨 기능을 쓰려면 `src/main.cpp`의 `WeatherData("YOUR_API_KEY", ...)` 자리에
   본인의 [OpenWeatherMap](https://openweathermap.org/api) API 키를 넣으세요(키 없이도 HUD는 동작).
 
@@ -131,6 +131,7 @@ cmake --build LaptopBridge/build --target LaptopBridge
 - TPMS·일부 GPS 파생값(트립/주행거리)은 UI 자리만 마련되어 있고 실제 소스 연동은 부분적입니다.
 - 날씨 API 키가 소스에 직접 들어가는 구조 → 환경변수/설정 파일 분리 예정.
 - 자동 재연결, 단위 테스트, CI 빌드는 향후 과제.
+- **구버전/대체 스킨**: `qml/components/`, `qml/HudView.qml`, `qml/VariantMinimal.qml`은 hud2 스킨 이전의 대체 HUD 스킨으로, 현재 앱(`qml/main.qml` → `Hud2App`)에서는 로드하지 않습니다(빌드에는 남아 있음). `resouces/qml.qrc`도 `qt_add_qml_module`로 대체된 구버전 리소스 파일이라 빌드에 쓰이지 않습니다 — TPMS/트립 등 일부 카드가 데이터 소스 미연동인 점과 함께 정리 대상입니다.
 
 ## 트러블슈팅
 
